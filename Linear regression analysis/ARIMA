@@ -1,0 +1,89 @@
+from statsmodels.tsa.arima.model import ARIMA
+import warnings
+
+# Define the 'activities' variable
+activities = data['Item'].unique()
+
+# Train your ARIMA models and store them in 'arima_models'
+arima_models = {}
+for activity in activities:
+    activity_data = data[data['Item'] == activity]['Value']
+    # Assuming that the order (p, d, q) has been determined:
+    p, d, q = 1, 1, 1  # Replace with your chosen parameters
+    model = ARIMA(activity_data, order=(p, d, q))
+    arima_model_fit = model.fit()
+    arima_models[activity] = arima_model_fit
+
+# Setting a basic ARIMA configuration
+p, d, q = 1, 1, 1  # (p: Autoregression, d: Differencing, q: Moving Average)
+
+# Creating ARIMA models for each farming activity
+arima_models = {}
+arima_predictions = {}
+
+# Suppressing warnings for model fit
+warnings.filterwarnings("ignore")
+
+for activity in activities:
+    # Filter the data for the current activity
+    activity_data = data[data['Item'] == activity]['Value']
+
+    # Creating and fitting the ARIMA model
+    arima_model = ARIMA(activity_data, order=(p, d, q))
+    arima_model_fit = arima_model.fit()
+
+    # Storing the model and predictions
+    arima_models[activity] = arima_model_fit
+    arima_predictions[activity] = arima_model_fit.forecast(steps=10)  # Forecasting the next 10 years
+
+# Creating a figure for individual and consolidated plots using ARIMA models
+plt.figure(figsize=(15, 20))
+
+# Plotting the data and predictions for each activity in individual subplots
+for i, activity in enumerate(activities, 1):
+    # Filter the data for the current activity
+    activity_data = data[data['Item'] == activity]
+
+    # Historical data
+    X = activity_data['Year'].values  # Independent variable (Year)
+    y = activity_data['Value'].values  # Dependent variable (CO2 emissions)
+
+    # Predictions
+    predictions = arima_predictions[activity]
+
+    # Creating a subplot for each activity
+    plt.subplot(len(activities) + 1, 1, i)
+    plt.plot(X, y, color='blue', label='Historical Data')
+    plt.plot(range(latest_year + 1, latest_year + 11), predictions, color='red', label='Predictions with ARIMA')
+    plt.title(activity)
+    plt.xlabel('Year')
+    plt.ylabel('CO2 Emissions (kt)')
+    plt.legend()
+
+# Creating a subplot for the consolidated graph
+plt.subplot(len(activities) + 1, 1, len(activities) + 1)
+
+# Looping through each activity to plot the consolidated data and predictions
+for activity in activities:
+    # Filter the data for the current activity
+    activity_data = data[data['Item'] == activity]
+
+    # Historical data and Predictions
+    X = activity_data['Year'].values  # Independent variable (Year)
+    y = activity_data['Value'].values  # Dependent variable (CO2 emissions)
+    predictions = arima_predictions[activity]
+
+    # Plotting historical data and predictions
+    plt.plot(X, y, label=f'{activity} - Historical')
+    plt.plot(range(latest_year + 1, latest_year + 11), predictions, label=f'{activity} - Predictions with ARIMA')
+
+plt.title('Consolidated CO2 Emissions Predictions for Different Farming Activities (ARIMA)')
+plt.xlabel('Year')
+plt.ylabel('CO2 Emissions (kt)')
+plt.legend(loc='upper left', bbox_to_anchor=(1, 1))  # Moving the legend outside the plot
+
+# Adjusting layout to prevent overlap
+plt.tight_layout()
+
+# Show the plots
+plt.show()
