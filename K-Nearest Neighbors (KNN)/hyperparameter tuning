@@ -1,0 +1,44 @@
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
+
+# Separate features and target variable
+X = food_loss_waste[['Year', 'Value']]
+y = (food_loss_waste['Element'] == 'Loss').astype(int)  # Binary classification for loss
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Define the KNN model
+knn_model = KNeighborsClassifier()
+
+# Define the parameter grid to search
+param_grid = {
+    'n_neighbors': [3, 5, 7, 9],
+    'weights': ['uniform', 'distance'],
+    'p': [1, 2]
+}
+
+# Use GridSearchCV to find the best parameters
+grid_search = GridSearchCV(knn_model, param_grid, cv=5, scoring='accuracy')
+grid_search.fit(X_train, y_train)
+
+# Get the best parameters
+best_params = grid_search.best_params_
+
+# Print the best parameters
+print("Best Parameters:", best_params)
+
+# Get the mean cross-validated score of the best estimator
+mean_cv_score = round(grid_search.best_score_, 4)
+print("Mean Cross-Validated Score of the Best Estimator:", mean_cv_score)
+
+# Get the best estimator
+best_estimator = grid_search.best_estimator_
+
+# Use the best estimator to make predictions on the test set
+y_pred_test = best_estimator.predict(X_test)
+
+# Calculate accuracy on the test set
+accuracy_test = round(accuracy_score(y_test, y_pred_test), 4)
+print("Accuracy on Test Set:", accuracy_test)
