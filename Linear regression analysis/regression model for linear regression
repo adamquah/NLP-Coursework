@@ -1,0 +1,39 @@
+# Calculating regression metrics for the linear regression models used earlier on the historical data.
+
+# Initializing lists to store the metrics for each activity
+lr_mae_list = []
+lr_mse_list = []
+lr_rmse_list = []
+lr_r2_list = []
+
+for activity in activities:
+    # Get the historical data
+    activity_data = data[data['Item'] == activity]
+    X = activity_data['Year'].values.reshape(-1, 1)  # Independent variable (Year)
+    y = activity_data['Value'].values  # Dependent variable (CO2 emissions)
+
+    # Get the predictions from the linear regression model
+    lr_predictions = models_corrected[activity].predict(X)
+
+    # Calculate the metrics
+    lr_mae = mean_absolute_error(y, lr_predictions)
+    lr_mse = mean_squared_error(y, lr_predictions)
+    lr_rmse = mean_squared_error(y, lr_predictions, squared=False)
+    lr_r2 = r2_score(y, lr_predictions)
+
+    # Store the metrics
+    lr_mae_list.append(lr_mae)
+    lr_mse_list.append(lr_mse)
+    lr_rmse_list.append(lr_rmse)
+    lr_r2_list.append(lr_r2)
+
+# Create a DataFrame to display the metrics for each activity
+linear_regression_report_df = pd.DataFrame({
+    'Activity': activities,
+    'MAE': lr_mae_list,
+    'MSE': lr_mse_list,
+    'RMSE': lr_rmse_list,
+    'R2': lr_r2_list
+})
+
+linear_regression_report_df
