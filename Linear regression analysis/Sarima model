@@ -1,0 +1,49 @@
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+
+last_year = 2020
+num_future_years = 10
+
+
+
+# Creating a range of the next 10 years
+future_years_extended = list(range(last_year + 1, last_year + num_future_years + 1))
+
+# Preparing a DataFrame for SARIMAX model predictions
+sarimax_prediction_df = pd.DataFrame(index=future_years_extended)
+
+# Applying SARIMAX model for each item, considering external factors
+for item in unique_items:
+    item_data = data[data['Item'] == item].copy()
+    item_data['Year'] = pd.to_datetime(item_data['Year'], format='%Y')  # Convert 'Year' to a datetime format
+    item_data.set_index('Year', inplace=True)
+    item_data.sort_index(inplace=True)
+
+    # Defining the external factors
+    exog_vars = item_data[['Agricultural land (sq. km)', 'Rice Transportation', 'On-farm Electricity Use', 'Rice Packaging', 'Rice Processing']]
+
+    # Using SARIMAX model (choosing order (1,1,1) as a starting point and seasonal_order (0,0,0,0) assuming no seasonality)
+    try:
+        sarimax_model = SARIMAX(item_data['Value'], order=(1, 1, 1), seasonal_order=(0, 0, 0, 0), exog=exog_vars)
+        #sarimax_result = sarimax_model.fit()
+        sarimax_result = sarimax_model.fit(maxiter=500, method='bfgs')
+
+        # Forecasting for the next 10 years
+        # We need to provide future values of exogenous variables for prediction. We'll use the last known values.
+        future_exog = pd.DataFrame({var: [exog_vars[var].iloc[-1]]*10 for var in exog_vars.columns}, index=future_years_extended)
+        forecast = sarimax_result.get_forecast(steps=10, exog=future_exog).predicted_mean
+        sarimax_prediction_df[item] = forecast.values
+    except (ValueError, np.linalg.LinAlgError):
+        # Handling cases where SARIMAX model fails to converge
+        sarimax_prediction_df[item] = [np.nan] * 10
+
+# Plotting the SARIMAX predictions
+plt.figure(figsize=(15, 8))
+for item in sarimax_prediction_df.columns:
+    plt.plot(sarimax_prediction_df.index, sarimax_prediction_df[item], label=item)
+
+plt.title('SARIMAX Predicted CO2 Emissions for the Next 10 Years by Item (With External Factors)')
+plt.xlabel('Year')
+plt.ylabel('CO2 Emissions (kt)')
+plt.legend(title='Item')
+plt.grid(True)
+plt.show()
