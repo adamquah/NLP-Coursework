@@ -1,0 +1,71 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, classification_report, roc_curve, auc, roc_auc_score
+import matplotlib.pyplot as plt
+
+# Get user input for prediction
+year = float(input("Enter Year (2010-2021): "))
+export = float(input("Enter Export (tonnes): "))
+food_supply_quantity = float(input("Enter Food Supply Quantity (tonnes): "))
+import_value = float(input("Enter Import (tonnes): "))
+processed_value = float(input("Enter Processed (tonnes): "))
+production_value = float(input("Enter Production (tonnes): "))
+
+# Create a DataFrame with user input
+user_input_df = pd.DataFrame({'Year': [year], 'Value': [food_supply_quantity]})
+
+# Define the KNN model
+knn_model = KNeighborsClassifier()
+
+# Assuming 'food_loss_waste' is your DataFrame containing the relevant data
+X = food_loss_waste[['Year', 'Value']]
+y = (food_loss_waste['Element'] == 'Loss').astype(int)  # Binary classification for loss
+
+# Train the model on the entire dataset
+knn_model.fit(X, y)
+
+# Make predictions on the user input
+user_pred = knn_model.predict(user_input_df)
+
+# Display the prediction
+print(f"Predicted Loss (1) or Not Loss (0): {user_pred[0]}")
+
+X = food_loss_waste[['Year', 'Value']]
+y = (food_loss_waste['Element'] == 'Loss').astype(int)  # Binary classification for loss
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Define the KNN model
+knn_model = KNeighborsClassifier()
+
+# Train the model
+knn_model.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = knn_model.predict(X_test)
+
+# Display classification report
+report = classification_report(y_test, y_pred, target_names=['0', '1'])
+print("Classification Report:")
+print(report)
+
+# Compute ROC curve and AUC
+fpr, tpr, _ = roc_curve(y_test, knn_model.predict_proba(X_test)[:, 1])
+roc_auc = auc(fpr, tpr)
+
+# Compute ROC-AUC score
+roc_auc_score_value = roc_auc_score(y_test, knn_model.predict_proba(X_test)[:, 1])
+print(f"ROC-AUC Score: {roc_auc_score_value:.2f}")
+
+# Plot ROC curve with AUC filled region (smaller graph)
+plt.figure(figsize=(6, 6))
+plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC = {roc_auc:.2f}')
+plt.fill_between(fpr, tpr, color='lightgray', alpha=0.5)
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic with AUC (KNN)')
+plt.legend(loc="lower right")
+plt.show()
