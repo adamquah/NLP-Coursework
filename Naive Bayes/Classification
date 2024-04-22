@@ -1,0 +1,44 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.impute import SimpleImputer
+from sklearn.metrics import classification_report, roc_curve, auc, roc_auc_score
+import matplotlib.pyplot as plt
+
+
+# Prompt user for input
+year = input("Enter the year (2010-2021): ")
+export = input("Enter the export value (tonnes): ")
+food_supply_quantity = input("Enter the food supply quantity (tonnes): ")
+import_value = input("Enter the import value (tonnes): ")
+processed_value = input("Enter the processed value (tonnes): ")
+production_value = input("Enter the production value (tonnes): ")
+
+
+# Define target variable
+y = (food_loss_waste['Value'] > 0).astype(int)  # Binary classification based on a threshold
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_combined_imputed, y, test_size=0.2, random_state=42)
+
+# Create a Multinomial Naive Bayes classifier
+nb_classifier = MultinomialNB()
+
+# Train the classifier
+nb_classifier.fit(X_train, y_train)
+
+
+# Make predictions on the test set
+y_pred = nb_classifier.predict(X_test)
+
+# Display predicted labels
+print("\nPredicted Labels:")
+print(y_pred)
+
+# Display classification report
+report = classification_report(y_test, y_pred, target_names=['Not Loss', 'Loss'])
+print("\nClassification Report:")
+print(report)
+
+
