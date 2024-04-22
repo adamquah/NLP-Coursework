@@ -1,0 +1,27 @@
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Select the relevant columns from your dataset
+selected_columns = ['Item', 'Agricultural land (sq. km)', 'Rice Transportation', 'On-farm Electricity Use', 'Rice Packaging', 'Rice Processing', 'Value']
+
+# Create a DataFrame for the correlation calculation, grouping by "Item"
+correlation_data = data[selected_columns].set_index('Item')
+
+# Get unique "Item" categories
+unique_items = correlation_data.index.unique()
+
+# Create subplots for each "Item" category
+num_items = len(unique_items)
+fig, axes = plt.subplots(num_items, 1, figsize=(12, 4*num_items), sharex=True)
+
+# Calculate and plot correlations for each "Item" category
+for i, item in enumerate(unique_items):
+    item_data = correlation_data.loc[item]
+    correlation_matrix = item_data.corr()
+    value_correlations = correlation_matrix['Value']
+
+    sns.heatmap(value_correlations.to_frame().T, annot=True, cmap='coolwarm', linewidths=.5, ax=axes[i])
+    axes[i].set_title(f'Correlation Heatmap for "{item}"')
+
+plt.tight_layout()
+plt.show()
