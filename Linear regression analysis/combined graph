@@ -1,0 +1,66 @@
+# Combining individual graphs and a consolidated graph in the same code block
+
+activities = data['Item'].unique()
+# Train your models and store them in 'models_corrected'
+models_corrected = {}
+for activity in activities:
+    activity_data = data[data['Item'] == activity]
+    X = activity_data['Year'].values.reshape(-1, 1)
+    y = activity_data['Value'].values
+    model = LinearRegression()
+    model.fit(X, y)
+    models_corrected[activity] = model
+
+latest_year = data['Year'].max()
+prediction_years = np.arange(latest_year + 1, latest_year + 11).reshape(-1, 1)
+
+
+# Creating a figure for individual plots
+plt.figure(figsize=(15, 20))
+
+# Plotting the data and predictions for each activity in individual subplots
+for i, activity in enumerate(activities, 1):
+    # Filter the data for the current activity
+    activity_data = data[data['Item'] == activity]
+
+    # Historical data and Predictions
+    X = activity_data['Year'].values.reshape(-1, 1)  # Independent variable (Year)
+    y = activity_data['Value'].values  # Dependent variable (CO2 emissions)
+    predictions = models_corrected[activity].predict(prediction_years)
+
+    # Creating a subplot for each activity
+    plt.subplot(len(activities) + 1, 1, i)
+    plt.scatter(X, y, color='blue', label='Historical Data')
+    plt.plot(prediction_years, predictions, color='red', label='Predictions')
+    plt.title(activity)
+    plt.xlabel('Year')
+    plt.ylabel('CO2 Emissions (kt)')
+    plt.legend()
+
+# Creating a subplot for the consolidated graph
+plt.subplot(len(activities) + 1, 1, len(activities) + 1)
+
+# Looping through each activity to plot the consolidated data and predictions
+for activity in activities:
+    # Filter the data for the current activity
+    activity_data = data[data['Item'] == activity]
+
+    # Historical data and Predictions
+    X = activity_data['Year'].values.reshape(-1, 1)  # Independent variable (Year)
+    y = activity_data['Value'].values  # Dependent variable (CO2 emissions)
+    predictions = models_corrected[activity].predict(prediction_years)
+
+    # Plotting historical data and predictions
+    plt.scatter(X, y, label=f'{activity} - Historical')
+    plt.plot(prediction_years.flatten(), predictions, label=f'{activity} - Predictions')
+
+plt.title('Consolidated CO2 Emissions Predictions for Different Farming Activities')
+plt.xlabel('Year')
+plt.ylabel('CO2 Emissions (kt)')
+plt.legend(loc='upper left', bbox_to_anchor=(1, 1))  # Moving the legend outside the plot
+
+# Adjusting layout to prevent overlap
+plt.tight_layout()
+
+# Show the plots
+plt.show()
