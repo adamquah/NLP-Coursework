@@ -1,0 +1,26 @@
+# Get predicted probabilities for each class
+proba_scores = nb_classifier.predict_proba(X_test)
+
+# Display the predicted probabilities
+print("\nPredicted Probabilities:")
+print(proba_scores)
+
+
+# Compute ROC curve and AUC
+fpr, tpr, _ = roc_curve(y_test, proba_scores[:, 1])
+roc_auc = auc(fpr, tpr)
+
+# Compute ROC-AUC score
+roc_auc_score_value = roc_auc_score(y_test, proba_scores[:, 1])
+print(f"\nROC-AUC Score: {roc_auc_score_value:.2f}")
+
+# Plot ROC curve with AUC filled region
+plt.figure(figsize=(6, 6))
+plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC = {roc_auc:.2f}')
+plt.fill_between(fpr, tpr, color='lightgray', alpha=0.5)
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic with AUC (NB)')
+plt.legend(loc="lower right")
+plt.show()
