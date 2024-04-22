@@ -1,0 +1,31 @@
+# Import necessary libraries
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+from sklearn.tree import plot_tree
+
+# Select predictor and target variables
+X = df[df['Item'] == 'Rice and products']['Production'].values.reshape(-1, 1)
+y = df[df['Item'] == 'Rice and products']['Food supply quantity (kg/capita/yr)']
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create a decision tree regressor
+dt_reg = DecisionTreeRegressor(random_state=42)
+
+# Fit the model to the training data
+dt_reg.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = dt_reg.predict(X_test)
+
+# Evaluate the model
+mse = mean_squared_error(y_test, y_pred)
+print(f'Mean Squared Error: {mse}')
+
+# Visualize the decision tree
+plt.figure(figsize=(15, 10))
+plot_tree(dt_reg, feature_names=['Production'], filled=True, rounded=True, fontsize=10)
+plt.title('Decision Tree Regression')
+plt.show()
